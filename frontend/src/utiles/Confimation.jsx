@@ -21,7 +21,7 @@ function Confimation({ show, setShow, id }) {
     const user = localStorage.getItem('@user')
 
     axiosClient
-      .delete(backed_urls.deleteTodo + id)
+      .delete(backed_urls.deleteChat + id)
       .then((data) => {
         axiosClient
           .post(backed_urls.getToods, {

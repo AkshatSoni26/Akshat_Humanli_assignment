@@ -1,71 +1,88 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .models import ChatUser
+# from .models import ChatUser
 import json
 from django.views.decorators.csrf import csrf_exempt
 # from django.core.serializers import serialize
+import pyrebase
+
+config = {
+  "apiKey": "AIzaSyD1hdU6JrPzkapAiwS2ib1vMMmuf9GC8fw",
+  "authDomain": "chat-app-1bdba.firebaseapp.com",
+  "databaseURL": "https://chat-app-1bdba-default-rtdb.firebaseio.com",
+  "storageBucket": "chat-app-1bdba.appspot.com"
+}
+
+firebase = pyrebase.initialize_app(config)
+
+db = firebase.database()
+
+dbUser = db.child("users")
 
 
 
 
+# @csrf_exempt
+# def register(request):
 
+#     if request.method == 'POST':
 
-@csrf_exempt
-def register(request):
+#         # Extract username and password from POST data
+#         data = json.loads(request.body.decode('utf-8'))
+#         username = data.get('username')
+#         password = data.get('password')
 
-    if request.method == 'POST':
-
-        # Extract username and password from POST data
-        data = json.loads(request.body.decode('utf-8'))
-        username = data.get('username')
-        password = data.get('password')
-
-        if len(username) < 2:
-            return JsonResponse({'message':'username should be grater then 2.', 'status':400},status=400)
+#         if len(username) < 2:
+#             return JsonResponse({'message':'username should be grater then 2.', 'status':400},status=400)
         
-        if len(password) < 2:
-            return JsonResponse({'message':'password should be grater then 2.', 'status':400},status=400)
+#         if len(password) < 2:
+#             return JsonResponse({'message':'password should be grater then 2.', 'status':400},status=400)
 
-        # Check if username already exists
-        if ChatUser.objects.filter(name=username).exists():
-            return JsonResponse({'message':'Username already exists', 'status':400}, status=200)
+#         # Check if username already exists
+#         if ChatUser.objects.filter(name=username).exists():
+#             return JsonResponse({'message':'Username already exists', 'status':400}, status=200)
         
-        # Create new user
-        user = ChatUser(name=username, password=password)
-        user.save()
+#         # Create new user
+#         user = ChatUser(name=username, password=password)
+#         user.save()
 
-        userId = ChatUser.objects.filter(name=username).first()
+#         userId = ChatUser.objects.filter(name=username).first()
         
-        return JsonResponse({'message':'User registered successfully', 'id': userId.id, "status":200}, status=200)
+#         return JsonResponse({'message':'User registered successfully', 'id': userId.id, "status":200}, status=200)
 
-    else:
-        return HttpResponse('Only POST requests are allowed for registration', status=405)
+#     else:
+#         return HttpResponse('Only POST requests are allowed for registration', status=405)
 
 
 @csrf_exempt
 def login(request):
-    if request.method == 'POST':
-        # Extract username and password from POST data
-        data = json.loads(request.body.decode('utf-8'))
-        username = data.get('username')
-        password = data.get('password')
+    data = dbUser.push({'username':'user1', 'passward':'userpassward', 'isLogin': True})
 
-        # Check if username and password are provided
-        if not username or not password:
-            return JsonResponse({'message': 'Username and password are required.', 'status': 400}, status=200)
+    print('data ===>', data)
 
-        # Check if username exists
-        user = ChatUser.objects.filter(name=username).first()
-        if user:
-            # Check if the provided password matches the user's password
-            if user.password == password:
-                return JsonResponse({'message': 'Login successful.', 'id': user.id, 'status':200}, status=200)
-            else:
-                return JsonResponse({'message': 'Invalid password.', 'status': 401}, status=401)
-        else:
-            return JsonResponse({'message': 'User not found.', 'status': 404}, status=200)
-    else:
-        return JsonResponse({'message': 'Only POST requests are allowed for login.', 'status': 405}, status=405)
+    return HttpResponse('login data')
+    # if request.method == 'POST':
+    #     # Extract username and password from POST data
+    #     data = json.loads(request.body.decode('utf-8'))
+    #     username = data.get('username')
+    #     password = data.get('password')
+
+    #     # Check if username and password are provided
+    #     if not username or not password:
+    #         return JsonResponse({'message': 'Username and password are required.', 'status': 400}, status=200)
+
+    #     # Check if username exists
+    #     user = ChatUser.objects.filter(name=username).first()
+    #     if user:
+    #         # Check if the provided password matches the user's password
+    #         if user.password == password:
+    #             return JsonResponse({'message': 'Login successful.', 'id': user.id, 'status':200}, status=200)
+    #         else:
+    #             return JsonResponse({'message': 'Invalid password.', 'status': 401}, status=401)
+    #     else:
+    #         return JsonResponse({'message': 'User not found.', 'status': 404}, status=200)
+    # else:
+    #     return JsonResponse({'message': 'Only POST requests are allowed for login.', 'status': 405}, status=405)
 
 
 # @csrf_exempt
@@ -95,7 +112,7 @@ def login(request):
 
 
 # @csrf_exempt
-# def create_todo(request):
+# def create_chat(request):
 #     if request.method == 'POST':
 #         # Extract data from POST request
 #         data = json.loads(request.body.decode('utf-8'))
@@ -122,7 +139,7 @@ def login(request):
 
 
 # @csrf_exempt
-# def update_status(request):
+# def update_chat(request):
 #     if request.method == 'PATCH':
 #         # Extract data from POST request
 #         data = json.loads(request.body.decode('utf-8'))
@@ -147,7 +164,7 @@ def login(request):
 
 
 # @csrf_exempt
-# def delete_todo(request, todo_id):
+# def delete_chat(request, todo_id):
 #     if request.method == 'DELETE':
 #         # Check if todo exists
 #         try:

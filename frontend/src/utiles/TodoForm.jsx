@@ -52,7 +52,7 @@ function TodoForm() {
     if (user) {
       if (todoData?.isNew) {
         await axiosClient
-          .post(backed_urls.createTodo, {
+          .post(backed_urls.createChat, {
             user_id: user,
             todo: tit,
             description: desprition,
@@ -68,7 +68,7 @@ function TodoForm() {
           });
       } else {
         await axiosClient
-          .put(backed_urls.updateTodo + todoData?.todo_id + "/", {
+          .put(backed_urls.updateChat + todoData?.todo_id + "/", {
             // "user_id":1,
             todo: tit,
             description: desprition,
