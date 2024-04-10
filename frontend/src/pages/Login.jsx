@@ -4,6 +4,11 @@ import {Link, useNavigate} from 'react-router-dom'
 import axiosClient from "../utiles/axiosclient";
 import routes, { backed_urls } from "../constants/routes";
 import Loader from "../components/loader";
+import { getDatabase, ref, onValue } from "firebase/database";
+import firebaseapp from "../firebase.js";
+
+
+const db = getDatabase(firebaseapp);
 
 
 function Login() {
@@ -12,6 +17,8 @@ function Login() {
   const [isShow, setIsShow] = useState(false);
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  const starCountRef = ref(db, 'users/'+username+'/');
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
@@ -23,7 +30,7 @@ function Login() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const login_details = { username, password };
+    const login_details = { username, passward:password };
     // Here you can handle the submission logic, like sending data to server or validating the credentials
     console.log("login details:", login_details);
 
@@ -32,22 +39,28 @@ function Login() {
     axiosClient
       .post(backed_urls.login, login_details)
       .then((e) => {
+        console.log('e ===>', e)
         setLoading(false)
-        if (e.data.status==200){
+        if (e.status==200){
           localStorage.setItem('@user', e.data.id)
           navigate(routes.home)
-        }
-        if (e.data.status==404){
-          localStorage.setItem('@user', e.data.id)
-          navigate(routes.register)
         }
       })
       .catch((err) => {
       alert('something went wrong.')
         console.log("err ==>", err);
+        setLoading(false)
       });
 
   };
+
+  // onValue(starCountRef, (snapshot) => {
+  //   const data = snapshot.val();
+  //   console.log("data ===>", data)
+  //   // updateStarCount(postElement, data);
+  // });
+
+  
 
   return (
     <>
@@ -93,7 +106,6 @@ function Login() {
           <button type="submit">Submit</button>
         </form>
 
-        <div> not register yet? <Link to={routes.register}>click here</Link> </div>
       </div>
     </div>
     :

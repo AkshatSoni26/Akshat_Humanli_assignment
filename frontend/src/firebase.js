@@ -25,6 +25,6 @@ export const firebaseAnalytics = getAnalytics(firebaseapp);
 
 
 // Initialize Firebase Authentication and get a reference to the service
-export const firbaseAuth = getAuth(firebaseapp);
+// export const firbaseAuth = getAuth(firebaseapp);
 
 export default firebaseapp

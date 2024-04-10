@@ -7,17 +7,25 @@ from django.views.decorators.csrf import csrf_exempt
 import pyrebase
 
 config = {
-  "apiKey": "AIzaSyD1hdU6JrPzkapAiwS2ib1vMMmuf9GC8fw",
+   "apiKey": "AIzaSyD1hdU6JrPzkapAiwS2ib1vMMmuf9GC8fw",
   "authDomain": "chat-app-1bdba.firebaseapp.com",
-  "databaseURL": "https://chat-app-1bdba-default-rtdb.firebaseio.com",
-  "storageBucket": "chat-app-1bdba.appspot.com"
+  "projectId": "chat-app-1bdba",
+  "storageBucket": "chat-app-1bdba.appspot.com",
+  "messagingSenderId": "250769165998",
+  "appId": "1:250769165998:web:aeae314e75cedafc2fa73f",
+  "measurementId": "G-327H84D9Z4",
+  "databaseURL":'https://chat-app-1bdba-default-rtdb.firebaseio.com'
 }
 
 firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
 
-dbUser = db.child("users")
+USERS = 'users'
+CHATS = 'chats'
+
+dbUser = db.child(USERS)
+dbChat = db.child(CHATS)
 
 
 
@@ -54,36 +62,72 @@ dbUser = db.child("users")
 #         return HttpResponse('Only POST requests are allowed for registration', status=405)
 
 
+
+# # make the two users.
+# data = dbUser.child('user2').set( )
+# print('data ===>', data)
+
 @csrf_exempt
 def login(request):
-    data = dbUser.push({'username':'user1', 'passward':'userpassward', 'isLogin': True})
+    
+    if request.method == 'POST':
+            
+      # for getting the user data
+      all_data = dbUser.get().val()
 
-    print('data ===>', data)
+      if (all_data != None):
+      
+          # print("all_data ===>", { k:v for i in all_data.values() for k,v in i.items()})
+          all_data = { k:v for i in all_data.values() for k,v in i.items()}
+          # print("all_data ===>", all_data.values())
 
-    return HttpResponse('login data')
-    # if request.method == 'POST':
-    #     # Extract username and password from POST data
-    #     data = json.loads(request.body.decode('utf-8'))
-    #     username = data.get('username')
-    #     password = data.get('password')
+          try:
+                # Get the JSON data from the request body
+                post_data = json.loads(request.body.decode('utf-8'))
 
-    #     # Check if username and password are provided
-    #     if not username or not password:
-    #         return JsonResponse({'message': 'Username and password are required.', 'status': 400}, status=200)
+                # Access individual POST parameters
+                username = post_data.get('username')
 
-    #     # Check if username exists
-    #     user = ChatUser.objects.filter(name=username).first()
-    #     if user:
-    #         # Check if the provided password matches the user's password
-    #         if user.password == password:
-    #             return JsonResponse({'message': 'Login successful.', 'id': user.id, 'status':200}, status=200)
-    #         else:
-    #             return JsonResponse({'message': 'Invalid password.', 'status': 401}, status=401)
-    #     else:
-    #         return JsonResponse({'message': 'User not found.', 'status': 404}, status=200)
-    # else:
-    #     return JsonResponse({'message': 'Only POST requests are allowed for login.', 'status': 405}, status=405)
+                if (username in all_data):
+                
+                  password = post_data.get('passward')
 
+
+                  print("password ===>", password)
+
+                  print("all_data[username]['passward'] ====>", all_data[username]['passward'])
+
+                  if(all_data[username]['passward'] == password):
+                  
+                    # updating the values
+
+                    login = not (all_data[username]['isLogin'])
+
+                    data_to_update = {f'{USERS}/user1/isLogin': login}
+                    updated_data = db.update(data_to_update)
+
+                    print("data_to_update :-", data_to_update)
+                    print('updated_data ===>', updated_data)
+
+                    return JsonResponse({"id":all_data[username]['id'], "error":False}, status=200)
+
+                  else:
+                    return JsonResponse({"message":'you entered invalid passward.', "error":True}, status=400)
+
+                  # Perform login logic here
+                  return HttpResponse("POST request received")
+                else:
+                    return JsonResponse({"message":'you entered invalid username.', "error":True}, status=400)
+
+          except json.JSONDecodeError as e:
+                return HttpResponse("Invalid JSON data", status=400)
+          
+      else:
+            return JsonResponse({"message":'something went wrong in database query.', "error":True}, status=400)
+    
+    else:
+        return HttpResponse("This view accepts only POST requests")
+    
 
 # @csrf_exempt
 # def get_todos(request):
