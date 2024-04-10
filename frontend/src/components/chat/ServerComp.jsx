@@ -1,10 +1,11 @@
 import React from 'react'
 
-function ServerComp() {
+function ServerComp({message='client', chat}) {
     return (
         <div className='server'>
             <div className='server-text text'>
-                server
+                {/* server */}
+                {chat?.message}
             </div>
         </div>
     )

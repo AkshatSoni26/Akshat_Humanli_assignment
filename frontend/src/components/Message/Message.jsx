@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { IoIosSend } from "react-icons/io";
+import axiosClient from '../../utiles/axiosclient';
+import { backed_urls } from '../../constants/routes';
 
 
 function Message() {
@@ -7,9 +9,26 @@ function Message() {
     const [message, setMessage] = useState('')
 
 
-    const handleMessage = () => {
-        console.log('meesssage ==>', message)
-        setMessage('')
+    const handleMessage = (event) => {
+        const user_id = localStorage.getItem('@user')
+        if (event.key === "Enter"){
+            console.log('meesssage ==>', message)
+            axiosClient.post(
+                backed_urls.createChat, {
+                    'message': message,
+                    'id':user_id
+                }
+            ).then(
+                (res) =>{
+                    console.log('res ===>', res)
+                }
+            ).catch(
+                (err) => {
+                    console.log("err ===>", err)
+                }
+            )
+            setMessage('')
+        }
     }
 
     return (
@@ -28,6 +47,7 @@ function Message() {
                 placeholder='type your message here...'
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleMessage}
             />
 
             <IoIosSend style={{ cursor: 'pointer' }} size={40} className='send-message' onClick={handleMessage} />

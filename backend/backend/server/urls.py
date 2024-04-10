@@ -10,7 +10,7 @@ urlpatterns = [
 
     # path('get-todos/', views.get_todos, name='get_todos'),
 
-    # path('create-chat/', views.create_chat, name='create_chat'),
+    path('create-chat/', views.create_chat, name='create_chat'),
     # path('update-chat/', views.update_chat, name='update_chat'),
 
     # path('delete-chat/<int:todo_id>/', views.delete_chat, name='delete_chat'),

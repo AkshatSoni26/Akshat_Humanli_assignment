@@ -4,11 +4,11 @@ import {Link, useNavigate} from 'react-router-dom'
 import axiosClient from "../utiles/axiosclient";
 import routes, { backed_urls } from "../constants/routes";
 import Loader from "../components/loader";
-import { getDatabase, ref, onValue } from "firebase/database";
-import firebaseapp from "../firebase.js";
+// import { getDatabase, ref, onValue } from "firebase/database";
+// import firebaseapp from "../firebase.js";
 
 
-const db = getDatabase(firebaseapp);
+// const db = getDatabase(firebaseapp);
 
 
 function Login() {
@@ -18,7 +18,7 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const starCountRef = ref(db, 'users/'+username+'/');
+  // const starCountRef = ref(db, 'users/'+username+'/');
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);

@@ -5,6 +5,10 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 # from django.core.serializers import serialize
 import pyrebase
+import uuid
+import time
+
+
 
 config = {
    "apiKey": "AIzaSyD1hdU6JrPzkapAiwS2ib1vMMmuf9GC8fw",
@@ -24,42 +28,11 @@ db = firebase.database()
 USERS = 'users'
 CHATS = 'chats'
 
+
 dbUser = db.child(USERS)
 dbChat = db.child(CHATS)
 
 
-
-
-# @csrf_exempt
-# def register(request):
-
-#     if request.method == 'POST':
-
-#         # Extract username and password from POST data
-#         data = json.loads(request.body.decode('utf-8'))
-#         username = data.get('username')
-#         password = data.get('password')
-
-#         if len(username) < 2:
-#             return JsonResponse({'message':'username should be grater then 2.', 'status':400},status=400)
-        
-#         if len(password) < 2:
-#             return JsonResponse({'message':'password should be grater then 2.', 'status':400},status=400)
-
-#         # Check if username already exists
-#         if ChatUser.objects.filter(name=username).exists():
-#             return JsonResponse({'message':'Username already exists', 'status':400}, status=200)
-        
-#         # Create new user
-#         user = ChatUser(name=username, password=password)
-#         user.save()
-
-#         userId = ChatUser.objects.filter(name=username).first()
-        
-#         return JsonResponse({'message':'User registered successfully', 'id': userId.id, "status":200}, status=200)
-
-#     else:
-#         return HttpResponse('Only POST requests are allowed for registration', status=405)
 
 
 
@@ -113,9 +86,6 @@ def login(request):
 
                   else:
                     return JsonResponse({"message":'you entered invalid passward.', "error":True}, status=400)
-
-                  # Perform login logic here
-                  return HttpResponse("POST request received")
                 else:
                     return JsonResponse({"message":'you entered invalid username.', "error":True}, status=400)
 
@@ -129,29 +99,40 @@ def login(request):
         return HttpResponse("This view accepts only POST requests")
     
 
-# @csrf_exempt
-# def get_todos(request):
-#     if request.method == 'POST':
-#         # Extract user ID from POST data
-#         data = json.loads(request.body.decode('utf-8'))
-#         user_id = data.get('user_id')
+@csrf_exempt
+def update_message(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user_id = data.get('id')
+        new_message = data.get('message')
+        if user_id and new_message:
+            try:
+                # Update message in Firebase
+                dbChat.child(user_id).update({'message': new_message, })
+                return JsonResponse({'message': 'Message updated successfully'})
+            except :
+                return JsonResponse({'error': 'something went wrong.'}, status=404)
+        else:
+            return JsonResponse({'error': 'Missing id or message field'}, status=400)
 
-#         # Check if user ID is provided
-#         if not user_id:
-#             return JsonResponse({'message': 'User ID is required.', 'status': 400}, status=400)
+@csrf_exempt
+def create_chat(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        new_message = data.get('message')
+        user_id = data.get('id')
+        if new_message:
+            # Save message to Firebase
+            db.child('chats').push({
+                'message': new_message,
+                'time': str(time.time()),
+                'id':user_id
+            })
+            return JsonResponse({'message': 'Message created successfully'}, status=200)
+        else:
+            return JsonResponse({'error': 'Missing message field'}, status=400)
 
-#         # Check if user exists
-#         user = ChatUser.objects.filter(id=user_id).first()
 
-#         if user:
-#             # Retrieve todos associated with the user
-#             todos = Todo.objects.filter(user_id=user_id)
-#             todo_list = [{'todo': todo.todo,'todo_id':todo.id , 'description': todo.description, 'status': todo.status} for todo in todos]
-#             return JsonResponse({'todos': todo_list}, status=200)
-#         else:
-#             return JsonResponse({'message': 'User not found.', 'status': 404}, status=404)
-#     else:
-#         return JsonResponse({'message': 'Only POST requests are allowed to retrieve todos.', 'status': 405}, status=405)
 
 
 
@@ -160,22 +141,34 @@ def login(request):
 #     if request.method == 'POST':
 #         # Extract data from POST request
 #         data = json.loads(request.body.decode('utf-8'))
-#         user_id = data.get('user_id')
-#         todo_text = data.get('todo')
-#         description = data.get('description')
-#         status = data.get('status', 'in-progress')  # Default to 'in-progress' if status is not provided
 
-#         # Check if all required fields are provided
-#         if not (user_id and todo_text and description):
-#             return JsonResponse({'message': 'user_id, todo, and description are required fields.', 'status': 400}, status=400)
+#         {
+#             'message':'',
+#             'id':'',
+#             'time':'',
+#         }
 
-#         # Check if user exists
-#         user = ChatUser.objects.filter(id=user_id).first()
+#         # # make the two users.
+#         # data = dbUser.child('user2').set(  )
+#         # print('data ===>', data)
 
-#         if user:
-#             # Create new todo
-#             todo = Todo.objects.create(user_id=user, todo=todo_text, description=description, status=status)
-#             return JsonResponse({'message': 'Todo created successfully.', 'todo_id': todo.id}, status=201)
+#         # user_id = data.get('user_id')
+#         # todo_text = data.get('todo')
+#         # description = data.get('description')
+#         # status = data.get('status', 'in-progress')  # Default to 'in-progress' if status is not provided
+
+#         # # Check if all required fields are provided
+#         # if not (user_id and todo_text and description):
+#         #     return JsonResponse({'message': 'user_id, todo, and description are required fields.', 'status': 400}, status=400)
+
+#         # # Check if user exists
+#         # user = ChatUser.objects.filter(id=user_id).first()
+
+#         if True:
+#             pass
+#             # # Create new todo
+#             # todo = Todo.objects.create(user_id=user, todo=todo_text, description=description, status=status)
+#             # return JsonResponse({'message': 'Todo created successfully.', 'todo_id': todo.id}, status=201)
 #         else:
 #             return JsonResponse({'message': 'User not found.', 'status': 404}, status=404)
 #     else:
@@ -254,3 +247,37 @@ def login(request):
 #         return JsonResponse({'message': 'Todo updated successfully.', 'todo_id': todo.id}, status=200)
 #     else:
 #         return JsonResponse({'message': 'Only PUT requests are allowed to update todos.', 'status': 405}, status=405)
+
+
+
+
+
+
+
+
+
+
+
+# @csrf_exempt
+# def get_todos(request):
+#     if request.method == 'POST':
+#         # Extract user ID from POST data
+#         data = json.loads(request.body.decode('utf-8'))
+#         user_id = data.get('user_id')
+
+#         # Check if user ID is provided
+#         if not user_id:
+#             return JsonResponse({'message': 'User ID is required.', 'status': 400}, status=400)
+
+#         # Check if user exists
+#         user = ChatUser.objects.filter(id=user_id).first()
+
+#         if user:
+#             # Retrieve todos associated with the user
+#             todos = Todo.objects.filter(user_id=user_id)
+#             todo_list = [{'todo': todo.todo,'todo_id':todo.id , 'description': todo.description, 'status': todo.status} for todo in todos]
+#             return JsonResponse({'todos': todo_list}, status=200)
+#         else:
+#             return JsonResponse({'message': 'User not found.', 'status': 404}, status=404)
+#     else:
+#         return JsonResponse({'message': 'Only POST requests are allowed to retrieve todos.', 'status': 405}, status=405)
